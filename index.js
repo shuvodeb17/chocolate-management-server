@@ -1,4 +1,4 @@
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const express = require('express')
 require('dotenv').config()
 const cors = require('cors');
@@ -37,11 +37,42 @@ async function run() {
             res.send(result)
         })
 
+        app.get('/chocolate/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) }
+            const result = await chocolateCollection.findOne(query)
+            res.send(result)
+        })
+
+        app.put('/chocolate/:id', async (req, res) => {
+            const id = req.params.id;
+            const chocolate = req.body;
+            const filter = { _id: new ObjectId(id) }
+            const options = { upsert: true };
+            const updateChocolate = {
+                $set: {
+                    photo: chocolate.photo,
+                    name: chocolate.name,
+                    country: chocolate.country,
+                    category: chocolate.category
+                }
+            }
+            const result = await chocolateCollection.updateOne(filter, updateChocolate, options)
+            res.send(result)
+        })
+
         app.post('/chocolates', async (req, res) => {
             const chocolates = req.body;
             const result = await chocolateCollection.insertOne(chocolates)
             res.send(result)
             console.log(result);
+        })
+
+        app.delete('/chocolate/:id', async (req,res) => {
+            const id = req.params.id;
+            const query = {_id: new ObjectId(id)}
+            const result = await chocolateCollection.deleteOne(query)
+            res.send(result)
         })
 
 
